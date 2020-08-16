@@ -1,4 +1,4 @@
-# Copyright 2016 Cloudbase Solutions Srl
+# Copyright 2017 Cloudbase Solutions Srl
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
 """Config options available for the UCloud metadata service."""
 
 from oslo_config import cfg
@@ -20,12 +21,15 @@ from cloudbaseinit.conf import base as conf_base
 
 
 class UCloudOptions(conf_base.Options):
+
+    """Config options available for the UCloud metadata service."""
+
     def __init__(self, config):
         super(UCloudOptions, self).__init__(config, group="ucloud")
         self._options = [
             cfg.StrOpt(
                 "metadata_base_url", default="http://100.80.80.80",
-                help="The base URL where the service looks for metadata",
+                help="The URL where the service looks for metadata",
                 deprecated_name="ucloud_metadata_base_url",
                 deprecated_group="DEFAULT"),
             cfg.BoolOpt(
@@ -33,6 +37,15 @@ class UCloudOptions(conf_base.Options):
                 help="Add a route for the metadata ip address to the gateway",
                 deprecated_name="ucloud_add_metadata_private_ip_route",
                 deprecated_group="DEFAULT"),
+            cfg.StrOpt(
+                "metadata_host", default="100.80.80.80",
+                help="The metadata server host",
+                deprecated_name="ucloud_metadata_host",
+                deprecated_group="DEFAULT"),
+            cfg.IntOpt(
+                "password_server_port", default=80,
+                help="The port number used by the Password Server."
+            ),
         ]
 
     def register(self):
