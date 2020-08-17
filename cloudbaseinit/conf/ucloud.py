@@ -46,42 +46,45 @@ class UCloudOptions(conf_base.Options):
                 "password_server_port", default=80,
                 help="The port number used by the Password Server."
             ),
-            # cfg.ListOpt(
-            #     'plugins',
-            #     default=[
-            #         'cloudbaseinit.plugins.common.mtu.MTUPlugin',
-            #         'cloudbaseinit.plugins.windows.ntpclient'
-            #         '.NTPClientPlugin',
-            #         'cloudbaseinit.plugins.common.sethostname'
-            #         '.SetHostNamePlugin',
-            #         'cloudbaseinit.plugins.windows.createuser'
-            #         '.CreateUserPlugin',
-            #         'cloudbaseinit.plugins.common.networkconfig'
-            #         '.NetworkConfigPlugin',
-            #         'cloudbaseinit.plugins.windows.licensing'
-            #         '.WindowsLicensingPlugin',
-            #         'cloudbaseinit.plugins.common.sshpublickeys'
-            #         '.SetUserSSHPublicKeysPlugin',
-            #         'cloudbaseinit.plugins.windows.extendvolumes'
-            #         '.ExtendVolumesPlugin',
-            #         'cloudbaseinit.plugins.common.userdata.UserDataPlugin',
-            #         'cloudbaseinit.plugins.common.setuserpassword.'
-            #         'SetUserPasswordPlugin',
-            #         'cloudbaseinit.plugins.windows.winrmlistener.'
-            #         'ConfigWinRMListenerPlugin',
-            #         'cloudbaseinit.plugins.windows.winrmcertificateauth.'
-            #         'ConfigWinRMCertificateAuthPlugin',
-            #         'cloudbaseinit.plugins.common.localscripts'
-            #         '.LocalScriptsPlugin',
-            #     ],
-            #     help='List of enabled plugin classes, '
-            #          'to be executed in the provided order'),
-            # cfg.BoolOpt(
-            #     'allow_reboot', default=True,
-            #     help='Enables or disables the BCD auto recovery'),
-            # cfg.StrOpt(
-            #     'first_logon_behaviour', default='no',
-            #     help='Enables or disables the BCD auto recovery'),
+            cfg.ListOpt(
+                'plugins',
+                default=[
+                    'cloudbaseinit.plugins.common.mtu.MTUPlugin',
+                    'cloudbaseinit.plugins.windows.ntpclient'
+                    '.NTPClientPlugin',
+                    'cloudbaseinit.plugins.common.sethostname'
+                    '.SetHostNamePlugin',
+                    'cloudbaseinit.plugins.windows.createuser'
+                    '.CreateUserPlugin',
+                    'cloudbaseinit.plugins.common.networkconfig'
+                    '.NetworkConfigPlugin',
+                    'cloudbaseinit.plugins.windows.licensing'
+                    '.WindowsLicensingPlugin',
+                    'cloudbaseinit.plugins.common.sshpublickeys'
+                    '.SetUserSSHPublicKeysPlugin',
+                    'cloudbaseinit.plugins.windows.extendvolumes'
+                    '.ExtendVolumesPlugin',
+                    'cloudbaseinit.plugins.common.userdata.UserDataPlugin',
+                    'cloudbaseinit.plugins.common.setuserpassword.'
+                    'SetUserPasswordPlugin',
+                    'cloudbaseinit.plugins.windows.winrmlistener.'
+                    'ConfigWinRMListenerPlugin',
+                    'cloudbaseinit.plugins.windows.winrmcertificateauth.'
+                    'ConfigWinRMCertificateAuthPlugin',
+                    'cloudbaseinit.plugins.common.localscripts'
+                    '.LocalScriptsPlugin',
+                ],
+                help='List of enabled plugin classes, '
+                     'to be executed in the provided order'),
+            cfg.BoolOpt(
+                'allow_reboot', default=True,
+                help='Enables or disables the BCD auto recovery'),
+            cfg.BoolOpt(
+                'rename_admin_user', default=True,
+                help='Enables or disables the BCD auto recovery'),
+            cfg.StrOpt(
+                'first_logon_behaviour', default='no',
+                help='Enables or disables the BCD auto recovery'),
         ]
 
     def register(self):
