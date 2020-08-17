@@ -25,6 +25,7 @@ from cloudbaseinit.osutils import factory as osutils_factory
 from cloudbaseinit.utils import network
 from cloudbaseinit.models import network as network_model
 from cloudbaseinit.utils import encoding
+from cloudbaseinit.osutils import windows as add
 
 CONF = cloudbaseinit_conf.CONF
 LOG = oslo_logging.getLogger(__name__)
@@ -123,7 +124,8 @@ class UCloudService(base.BaseHTTPMetadataService):
                    b'- 10.23.255.101\n        ' \
                    b'- 10.23.255.102\n\n    ' \
                    b'pools:\n        ' \
-                   b'- 0.cn.pool.ntp.org\n\n'
+                   b'- 0.cn.pool.ntp.org\n\n' \
+
         return userdata
 
     def get_decoded_user_data(self):
@@ -148,7 +150,7 @@ class UCloudService(base.BaseHTTPMetadataService):
     def get_host_name(self):
         """Hostname of the virtual machine."""
         LOG.debug("shulu :%s", self.md.get('local-hostname'))
-        #return self.md.get('local-hostname')
+        # return self.md.get('local-hostname')
         return "shulu"
 
     def get_admin_password(self):
@@ -166,4 +168,15 @@ class UCloudService(base.BaseHTTPMetadataService):
         return ssh_keys
 
     def get_admin_username(self):
-        return "shulu"
+        # users = b'users:\n        ' \
+        #         b'- name: shulu\n        ' \
+        #         b'  groups: Administrators\n        ' \
+        #         b'  passwd: SHu075643@\n        ' \
+        user_info = {
+            "name": "shulu",
+        }
+
+        return u'user_info'
+
+    def get_admin_password(self):
+        return "SHu075643@"

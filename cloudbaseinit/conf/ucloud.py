@@ -80,7 +80,7 @@ class UCloudOptions(conf_base.Options):
                 'allow_reboot', default=True,
                 help='Enables or disables the BCD auto recovery'),
             cfg.BoolOpt(
-                'rename_admin_user', default=True,
+                'activate_windows', default=True,
                 help='Enables or disables the BCD auto recovery'),
             cfg.StrOpt(
                 'first_logon_behaviour', default='no',
