@@ -18,7 +18,7 @@
 from oslo_config import cfg
 
 from cloudbaseinit.conf import base as conf_base
-
+from cloudbaseinit import constant
 
 class UCloudOptions(conf_base.Options):
 
@@ -53,7 +53,7 @@ class UCloudOptions(conf_base.Options):
                 'activate_windows', default=True,
                 help='Enables or disables the BCD auto recovery'),
             cfg.StrOpt(
-                'first_logon_behaviour', default='no',
+                'first_logon_behaviour', default=constant.NEVER_CHANGE,
                 help='Enables or disables the BCD auto recovery'),
             cfg.ListOpt(
                 'plugins',
