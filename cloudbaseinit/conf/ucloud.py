@@ -46,6 +46,15 @@ class UCloudOptions(conf_base.Options):
                 "password_server_port", default=80,
                 help="The port number used by the Password Server."
             ),
+            cfg.BoolOpt(
+                'allow_reboot', default=True,
+                help='Enables or disables the BCD auto recovery'),
+            cfg.BoolOpt(
+                'activate_windows', default=True,
+                help='Enables or disables the BCD auto recovery'),
+            cfg.StrOpt(
+                'first_logon_behaviour', default='no',
+                help='Enables or disables the BCD auto recovery'),
             cfg.ListOpt(
                 'plugins',
                 default=[
@@ -76,15 +85,7 @@ class UCloudOptions(conf_base.Options):
                 ],
                 help='List of enabled plugin classes, '
                      'to be executed in the provided order'),
-            cfg.BoolOpt(
-                'allow_reboot', default=True,
-                help='Enables or disables the BCD auto recovery'),
-            cfg.BoolOpt(
-                'activate_windows', default=True,
-                help='Enables or disables the BCD auto recovery'),
-            cfg.StrOpt(
-                'first_logon_behaviour', default='no',
-                help='Enables or disables the BCD auto recovery'),
+
         ]
 
     def register(self):

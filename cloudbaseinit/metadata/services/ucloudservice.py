@@ -117,7 +117,7 @@ class UCloudService(base.BaseHTTPMetadataService):
 
     def get_user_data(self):
         userdata = b'#cloud-config\n\n' \
-                   b'timezone:  Asia/Shanghai\n' \
+                   b'timezone:  Asia/Tbilisi\n' \
                    b'ntp:\n    ' \
                    b'enabled: True\n    ' \
                    b'servers:\n        ' \
@@ -153,9 +153,6 @@ class UCloudService(base.BaseHTTPMetadataService):
         # return self.md.get('local-hostname')
         return "shulu"
 
-    def get_admin_password(self):
-        return "SHu075643@"
-
     def get_public_keys(self):
         """Available ssh public keys."""
         ssh_keys = []
@@ -166,17 +163,6 @@ class UCloudService(base.BaseHTTPMetadataService):
                 continue
             ssh_keys.append(ssh_key)
         return ssh_keys
-
-    def get_admin_username(self):
-        # users = b'users:\n        ' \
-        #         b'- name: shulu\n        ' \
-        #         b'  groups: Administrators\n        ' \
-        #         b'  passwd: SHu075643@\n        ' \
-        user_info = {
-            "name": "shulu",
-        }
-
-        return u'user_info'
 
     def get_admin_password(self):
         return "SHu075643@"
