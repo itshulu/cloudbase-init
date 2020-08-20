@@ -20,8 +20,8 @@ from oslo_config import cfg
 from cloudbaseinit.conf import base as conf_base
 from cloudbaseinit import constant
 
-class UCloudOptions(conf_base.Options):
 
+class UCloudOptions(conf_base.Options):
     """Config options available for the UCloud metadata service."""
 
     def __init__(self, config):
@@ -47,45 +47,24 @@ class UCloudOptions(conf_base.Options):
                 help="The port number used by the Password Server."
             ),
             cfg.BoolOpt(
-                'allow_reboot', default=True,
-                help='Enables or disables the BCD auto recovery'),
-            cfg.BoolOpt(
                 'activate_windows', default=True,
-                help='Enables or disables the BCD auto recovery'),
+                help='Activates Windows automatically'),
             cfg.StrOpt(
-                'first_logon_behaviour', default=constant.NEVER_CHANGE,
-                help='Enables or disables the BCD auto recovery'),
-            cfg.ListOpt(
-                'plugins',
-                default=[
-                    'cloudbaseinit.plugins.common.mtu.MTUPlugin',
-                    'cloudbaseinit.plugins.windows.ntpclient'
-                    '.NTPClientPlugin',
-                    'cloudbaseinit.plugins.common.sethostname'
-                    '.SetHostNamePlugin',
-                    'cloudbaseinit.plugins.windows.createuser'
-                    '.CreateUserPlugin',
-                    'cloudbaseinit.plugins.common.networkconfig'
-                    '.NetworkConfigPlugin',
-                    'cloudbaseinit.plugins.windows.licensing'
-                    '.WindowsLicensingPlugin',
-                    'cloudbaseinit.plugins.common.sshpublickeys'
-                    '.SetUserSSHPublicKeysPlugin',
-                    'cloudbaseinit.plugins.windows.extendvolumes'
-                    '.ExtendVolumesPlugin',
-                    'cloudbaseinit.plugins.common.userdata.UserDataPlugin',
-                    'cloudbaseinit.plugins.common.setuserpassword.'
-                    'SetUserPasswordPlugin',
-                    'cloudbaseinit.plugins.windows.winrmlistener.'
-                    'ConfigWinRMListenerPlugin',
-                    'cloudbaseinit.plugins.windows.winrmcertificateauth.'
-                    'ConfigWinRMCertificateAuthPlugin',
-                    'cloudbaseinit.plugins.common.localscripts'
-                    '.LocalScriptsPlugin',
-                ],
-                help='List of enabled plugin classes, '
-                     'to be executed in the provided order'),
-
+                'first_logon_behaviour',
+                default=constant.NEVER_CHANGE,
+                choices=constant.LOGON_PASSWORD_CHANGE_OPTIONS,
+                help='Control the behaviour of what happens at '
+                     'next logon. If this option is set to `always`, '
+                     'then the user will be forced to change the password '
+                     'at next logon. If it is set to '
+                     '`clear_text_injected_only`, '
+                     'then the user will have to change the password only if '
+                     'the password is a clear text password, coming from the '
+                     'metadata. The last option is `no`, when the user is '
+                     'never forced to change the password.'),
+            cfg.StrOpt(
+                'username', default='Administrator', help='User to be added to the '
+                                                          'system or updated if already existing'),
         ]
 
     def register(self):
