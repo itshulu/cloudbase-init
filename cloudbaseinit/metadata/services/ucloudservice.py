@@ -11,10 +11,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import copy
 import gzip
 import io
 import json
+import subprocess
 
 import requests
 from oslo_log import log as oslo_logging
@@ -22,10 +22,8 @@ from oslo_log import log as oslo_logging
 from cloudbaseinit import conf as cloudbaseinit_conf
 from cloudbaseinit.metadata.services import base
 from cloudbaseinit.osutils import factory as osutils_factory
+from cloudbaseinit.osutils.base import BaseOSUtils
 from cloudbaseinit.utils import network
-from cloudbaseinit.models import network as network_model
-from cloudbaseinit.utils import encoding
-from cloudbaseinit.osutils import windows as add
 
 CONF = cloudbaseinit_conf.CONF
 LOG = oslo_logging.getLogger(__name__)
@@ -37,9 +35,17 @@ MDPATH_PASSWORD = "/vendor-data/password/"
 
 BAD_REQUEST = "bad_request"
 TIMEOUT = 3
+DIGCF_PRESENT = 2
+
+import struct
+from cloudbaseinit.osutils.windows import WindowsUtils
+from six.moves import winreg
+import win32con
+import win32api
 
 
-class UCloudService(base.BaseHTTPMetadataService):
+class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
+
     """Metadata service for UCloud.
     """
     md = {}
@@ -59,10 +65,16 @@ class UCloudService(base.BaseHTTPMetadataService):
             'Distro-Name': 'windows',
             'UCloud-Magic': '9da657f8-27c3-4505-8934-1d7152477436'
         }
+        CONF.set_kms_product_key = CONF.ucloud.set_kms_product_key
+        CONF.activate_windows = CONF.ucloud.activate_windows
+        CONF.rename_admin_user = CONF.ucloud.rename_admin_user
+        CONF.first_logon_behaviour = CONF.ucloud.first_logon_behaviour
+        CONF.username = CONF.ucloud.username
 
     def load(self):
         """Obtain all the required information."""
         super(UCloudService, self).load()
+        LOG.debug("disk path :%s", self.get_disk())
         self.md = self._read_metadata()
         if CONF.ucloud.add_metadata_private_ip_route:
             network.check_metadata_ip_route(CONF.ucloud.metadata_base_url)
@@ -81,11 +93,9 @@ class UCloudService(base.BaseHTTPMetadataService):
         if not mdata:
             raise RuntimeError("unable to read metadata server ")
         mdata = json.loads(mdata.decode("utf-8"))
-        LOG.debug("shulu: %s", mdata)
         # vendordata
         vdata = self._read_md_server(MDPATH_VENDORDATA)
         mdata['vendor-data'] = vdata
-        LOG.debug("shulu: %s", mdata['vendor-data'])
         # userdata
         udata = self._read_md_server(MDPATH_USERDATA)
         mdata['user-data'] = udata
@@ -113,20 +123,17 @@ class UCloudService(base.BaseHTTPMetadataService):
         return response
 
     def get_kms_host(self):
-        return "yg.kms.ucloud.cn"
+        return "cs.kms.ucloud.cn"
 
     def get_user_data(self):
-        userdata = b'#cloud-config\n\n' \
-                   b'timezone:  Asia/Tbilisi\n' \
-                   b'ntp:\n    ' \
-                   b'enabled: True\n    ' \
-                   b'servers:\n        ' \
-                   b'- 10.23.255.101\n        ' \
-                   b'- 10.23.255.102\n\n    ' \
-                   b'pools:\n        ' \
-                   b'- 0.cn.pool.ntp.org\n\n' \
-
-        return userdata
+        """"这里需要判断userData是否有数据，若有则设置用户数据，若无则设置服务端数据"""
+        userData = self.md.get("user-data")
+        vendorData = self.md.get("vendor-data")
+        """此处判断条件需要修改"""
+        if userData != b'' and userData!="":
+            return userData
+        """"会识别返回的数据，若有其不识别的字段日志会出现error，需要解决。"""
+        return vendorData
 
     def get_decoded_user_data(self):
         """Get the decoded user data, if any
@@ -149,20 +156,35 @@ class UCloudService(base.BaseHTTPMetadataService):
 
     def get_host_name(self):
         """Hostname of the virtual machine."""
-        LOG.debug("shulu :%s", self.md.get('local-hostname'))
-        # return self.md.get('local-hostname')
-        return "shulu"
+        return self.md.get('local-hostname')
 
-    def get_public_keys(self):
-        """Available ssh public keys."""
-        ssh_keys = []
-        ssh_chunks = str(self.md.get('public-ssh-keys')).splitlines()
-        for ssh_key in ssh_chunks:
-            ssh_key = ssh_key.strip()
-            if not ssh_key:
-                continue
-            ssh_keys.append(ssh_key)
-        return ssh_keys
 
     def get_admin_password(self):
         return "SHu075643@"
+
+    """Password reset related"""
+    def _get_config_key_name(self, section):
+        key_name = 'SOFTWARE\\Cloudbase Solutions\\Cloudbase-Init\\' + self.md.get('instance-id') + '\\Plugins\\'
+        if section:
+            key_name += section.replace('/', '\\') + '\\'
+        return key_name
+
+    def removeValue(self, section=None):
+        key_name = self._get_config_key_name(section)
+        key = win32api.RegOpenKey(winreg.HKEY_LOCAL_MACHINE, key_name, 0, win32con.KEY_ALL_ACCESS)
+        try:
+            win32api.RegDeleteValue(key, "SetUserPasswordPlugin")
+        except:
+            pass
+
+
+    def run_powershell_command(self):
+        path = subprocess.run('for %x in (powershell.exe) do @echo %~$PATH:x', stdout=subprocess.PIPE,shell=True)\
+            .stdout.decode('utf-8').replace('\\', '\\\\')
+        command = (path + " Get-Disk "
+                                    "|Where partitionstyle -eq ‘raw’ "
+                                    "|Initialize-Disk -PartitionStyle MBR -PassThru "
+                                    "|New-Partition -AssignDriveLetter -UseMaximumSize "
+                                    "|Format-Volume -FileSystem NTFS")\
+            .replace("\r\n","")
+        subprocess.run(command)

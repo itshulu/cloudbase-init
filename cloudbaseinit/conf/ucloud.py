@@ -19,6 +19,9 @@ from oslo_config import cfg
 
 from cloudbaseinit.conf import base as conf_base
 from cloudbaseinit import constant
+from cloudbaseinit.conf.default import GlobalOptions
+from oslo_log import log as oslo_logging
+LOG = oslo_logging.getLogger(__name__)
 
 
 class UCloudOptions(conf_base.Options):
@@ -49,6 +52,13 @@ class UCloudOptions(conf_base.Options):
             cfg.BoolOpt(
                 'activate_windows', default=True,
                 help='Activates Windows automatically'),
+            cfg.BoolOpt(
+                'set_kms_product_key', default=True,
+                help='Sets the KMS product key for this operating system'),
+            cfg.BoolOpt(
+                'rename_admin_user', default=True,
+                help='Renames the builtin admin user instead of creating a '
+                     'new user'),
             cfg.StrOpt(
                 'first_logon_behaviour',
                 default=constant.NEVER_CHANGE,
@@ -65,6 +75,7 @@ class UCloudOptions(conf_base.Options):
             cfg.StrOpt(
                 'username', default='Administrator', help='User to be added to the '
                                                           'system or updated if already existing'),
+
         ]
 
     def register(self):
