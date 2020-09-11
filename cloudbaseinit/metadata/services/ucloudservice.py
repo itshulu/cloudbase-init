@@ -74,8 +74,11 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
     def load(self):
         """Obtain all the required information."""
         super(UCloudService, self).load()
-        LOG.debug("disk path :%s", self.get_disk())
+        """为了防止镜像中DHCP租期过长导致创建的云服务器无法正确的获取地址，需要释放当前的DHCP地址"""
+        self.init_dhcp()
         self.md = self._read_metadata()
+        """对裸盘进行初始化"""
+        self.init_disk()
         if CONF.ucloud.add_metadata_private_ip_route:
             network.check_metadata_ip_route(CONF.ucloud.metadata_base_url)
         try:
@@ -177,14 +180,22 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
         except:
             pass
 
+    def init_disk(self):
+        command = " Get-Disk " \
+                  "|Where partitionstyle -eq ‘raw’ " \
+                  "|Initialize-Disk -PartitionStyle MBR -PassThru " \
+                  "|New-Partition -AssignDriveLetter -UseMaximumSize " \
+                  "|Format-Volume -FileSystem NTFS"
+        self.run_powershell_command(command)
 
-    def run_powershell_command(self):
-        path = subprocess.run('for %x in (powershell.exe) do @echo %~$PATH:x', stdout=subprocess.PIPE,shell=True)\
+    def init_dhcp(self):
+        command = " ipconfig /release"
+        self.run_powershell_command(command)
+        command = " ipconfig /renew"
+        self.run_powershell_command(command)
+
+    def run_powershell_command(self, command):
+        path = subprocess.run('for %x in (powershell.exe) do @echo %~$PATH:x', stdout=subprocess.PIPE, shell=True) \
             .stdout.decode('utf-8').replace('\\', '\\\\')
-        command = (path + " Get-Disk "
-                                    "|Where partitionstyle -eq ‘raw’ "
-                                    "|Initialize-Disk -PartitionStyle MBR -PassThru "
-                                    "|New-Partition -AssignDriveLetter -UseMaximumSize "
-                                    "|Format-Volume -FileSystem NTFS")\
-            .replace("\r\n","")
+        command = (path + command).replace("\r\n", "")
         subprocess.run(command)
