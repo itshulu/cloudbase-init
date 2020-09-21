@@ -66,8 +66,6 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
             'UCloud-Magic': '9da657f8-27c3-4505-8934-1d7152477436'
         }
         CONF.set_kms_product_key = CONF.ucloud.set_kms_product_key
-        CONF.activate_windows = CONF.ucloud.activate_windows
-        CONF.rename_admin_user = CONF.ucloud.rename_admin_user
         CONF.first_logon_behaviour = CONF.ucloud.first_logon_behaviour
         CONF.username = CONF.ucloud.username
 
@@ -77,12 +75,17 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
         """为了防止镜像中DHCP租期过长导致创建的云服务器无法正确的获取地址，需要释放当前的DHCP地址"""
         self.init_dhcp()
         self.md = self._read_metadata()
+        """ResetAccount 判断是否要重置密码"""
+        #if self.md.get("vendor-data").get("ResetAccount"):
+            #self.removeValue()
+
         """对裸盘进行初始化"""
         self.init_disk()
         if CONF.ucloud.add_metadata_private_ip_route:
             network.check_metadata_ip_route(CONF.ucloud.metadata_base_url)
         try:
             self.get_host_name()
+
             return True
         except Exception as ex:
             LOG.exception(ex)
@@ -126,16 +129,10 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
         return response
 
     def get_kms_host(self):
-        return "cs.kms.ucloud.cn"
+        return self.md.get("kms")
 
     def get_user_data(self):
-        """"这里需要判断userData是否有数据，若有则设置用户数据，若无则设置服务端数据"""
-        userData = self.md.get("user-data")
         vendorData = self.md.get("vendor-data")
-        """此处判断条件需要修改"""
-        if userData != b'' and userData!="":
-            return userData
-        """"会识别返回的数据，若有其不识别的字段日志会出现error，需要解决。"""
         return vendorData
 
     def get_decoded_user_data(self):
@@ -161,7 +158,6 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
         """Hostname of the virtual machine."""
         return self.md.get('local-hostname')
 
-
     def get_admin_password(self):
         return "SHu075643@"
 
@@ -177,6 +173,7 @@ class UCloudService(base.BaseHTTPMetadataService, BaseOSUtils):
         key = win32api.RegOpenKey(winreg.HKEY_LOCAL_MACHINE, key_name, 0, win32con.KEY_ALL_ACCESS)
         try:
             win32api.RegDeleteValue(key, "SetUserPasswordPlugin")
+            win32api.RegDeleteValue(key, "CreateUserPlugin")
         except:
             pass
 

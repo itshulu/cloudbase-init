@@ -50,15 +50,8 @@ class UCloudOptions(conf_base.Options):
                 help="The port number used by the Password Server."
             ),
             cfg.BoolOpt(
-                'activate_windows', default=True,
-                help='Activates Windows automatically'),
-            cfg.BoolOpt(
                 'set_kms_product_key', default=True,
                 help='Sets the KMS product key for this operating system'),
-            cfg.BoolOpt(
-                'rename_admin_user', default=True,
-                help='Renames the builtin admin user instead of creating a '
-                     'new user'),
             cfg.StrOpt(
                 'first_logon_behaviour',
                 default=constant.NEVER_CHANGE,
